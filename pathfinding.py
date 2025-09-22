@@ -18,7 +18,7 @@ def a_star(maze, start, goal):
     g_values = {start: 0}   # The g score for each cell
 
     # loop through the queue, this is an infinite loop that will only stop if the queue is empty
-        current_cell = # get this from the priority queue
+        ##current_cell = # get this from the priority queue
 
         # Check if the current cell is the goal:
             # if it is, run this command:
@@ -52,8 +52,8 @@ def a_star(maze, start, goal):
                 # You should add the cell coords (x, y) to the queue and the prioirty value should be the f-score
 
                 # Allows the get_path function to backtrack later, do not change
-                predecessors[neighbour] = current_cell
-    return None
+                ##predecessors[neighbour] = current_cell
+    ##return None
 
 
 def get_path(predecessors, start, goal):
@@ -68,8 +68,8 @@ def get_path(predecessors, start, goal):
 
 
 if __name__ == "__main__":
-    maze_map = utils.import_maze("mazes/maze1.txt")     # Change the path as required.
+    maze_map = utils.import_maze("mazes/maze1.txt")
     start = utils.locate(maze_map, 's')
-    # Looking at the line above, do the same thing but this time, locate the goal
+    goal = utils.locate(maze_map, 'g')
     # Print out the path returned by the a_star function (after you have completed it)
     print(a_star(maze_map, start, goal))

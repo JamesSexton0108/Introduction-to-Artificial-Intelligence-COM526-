@@ -3,11 +3,9 @@ import utils
 
 
 def display_map(maze):
-    for line in utils.import_maze(maze):
+    for line in maze:
         print(line)
-    # As the name suggests, print out the 2D array as provided in 'maze'
-    # Make sure it displays nicely
-    pass    # Delete this line!
+
 
 
 def show_path(maze, path):
@@ -22,5 +20,8 @@ if __name__ == "__main__":
     maze_map = utils.import_maze("mazes/maze1.txt")
     start = utils.locate(maze_map, 's')
     goal = utils.locate(maze_map, 'g')
+    display_map(maze_map)
+    print(utils.locate(maze_map, 's'))
+    print(utils.locate(maze_map, 'g'))
 
     show_path(maze_map, pathfinding.a_star(maze_map, start, goal))
