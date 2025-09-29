@@ -1,4 +1,4 @@
-import pathfinding
+from Week1 import pathfinding
 import utils
 import time
 
