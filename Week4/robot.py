@@ -12,24 +12,45 @@ class Robot(Agent):
         self.water_station_location = None
 
     def decide(self, percept: dict[tuple[int, int], ...]):
-        print(percept)
+        free_spaces = []
+        fire_spaces = []
+
         for k,v in percept.items():
-            print(k,v)
             if v == " ":
-                return "move",k,v
+                free_spaces.append(k)
+            elif utils.is_flame(v):
+                fire_spaces.append(k)
+            elif utils.is_water_station(v):
+                self.water_station_location = k
+
+        if len(free_spaces) != 0 and len(fire_spaces) == 0:
+            return "move",random.choice(free_spaces),None
+        elif len(fire_spaces) != 0:
+            return "spray",random.choice(fire_spaces),None
         return "stay",None,None
 
 
     def act(self, environment):
         cell = self.sense(environment)
-        decision,cell,item = self.decide(cell)
+        decision,target,x = self.decide(cell)
         if decision == "move":
-            print(cell)
-            self.move(environment, cell)
+            self.move(environment, target)
+        elif decision == "spray":
+            self.spray(environment,target)
+
+
 
     def move(self, environment, to):
         if environment.move_to(self.position, to):
             self.position = to
+
+    def spray(self, environment, target):
+        self.water_level -= 5
+        fx, fy = target
+        environment.world[fy][fx] = " "
+
+
+
 
     def refill(self):
         self.water_level = 100

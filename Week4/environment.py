@@ -44,6 +44,16 @@ class Environment:
             cells[pos] = self.world[pos[1]][pos[0]]
         return cells
 
+    def move_to(self, from_pos: tuple[int,int], to_pos: tuple[int,int]):
+        fx, fy = from_pos
+        tx, ty = to_pos
+
+        robot = self.world[fy][fx]
+        self.world[fy][fx] = " "
+        self.world[ty][tx] = robot
+
+        return True
+
     def __str__(self):
         out = ""
         for row in self.world:
@@ -57,14 +67,14 @@ if __name__ == "__main__":
     e = Environment("map.txt")
 
     water = e.world[1][5]
-    #robot1 = e.world[5][5]
-    robot1 = e.world[2][5]
+    robot1 = e.world[5][5]
+    #robot1 = e.world[2][5]
 
-    for i in range(2):  # Change 1 simulate more moves. I.e. 100 would simulate 100 moves
+    for i in range(500):  # Change 1 simulate more moves. I.e. 100 would simulate 100 moves
         # Call the act method for each agent operating in the environment
-        #water.act(e)
-        robot1.act(e)
-        #print(robot1.water_level)
         print(e)
+        water.act(e)
+        robot1.act(e)
+        print(robot1.water_level)
 
 

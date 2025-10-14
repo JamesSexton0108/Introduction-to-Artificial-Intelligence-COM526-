@@ -8,7 +8,6 @@ class WaterStation(Agent):
 
     def decide(self, percept):
         for k,v in percept.items():
-            print(k,v)
             if utils.is_robot(v):
                 return "refill",k,v
         return "wait",None,None

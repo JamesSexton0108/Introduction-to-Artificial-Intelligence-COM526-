@@ -21,7 +21,6 @@ def show_path(maze, path):
 
         display_map(grid)
         print(f"\nStep {step_idx + 1}/{len(path)} at {(x, y)}\n")
-        time.sleep(0.1)
     # We are going to show the path the A* took one step at a time
     # for each coordinate provided in path:
         # print the map, showing a dash at that coordinate.
