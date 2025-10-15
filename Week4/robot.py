@@ -10,6 +10,34 @@ class Robot(Agent):
         super().__init__(position)
         self.water_level = 0
         self.water_station_location = None
+        self.known_map = None
+
+    def initialise_map(self, environment):
+        if self.known_map is not None:
+            return
+
+        rows = len(environment.world)
+        cols = len(environment.world[0])
+        self.known_map = [["?" for _ in range(cols)] for _ in range(rows)]
+
+        x, y = self.position
+        self.known_map[y][x] = " "
+
+    def update_map(self, percept, environment):
+        x, y = self.position
+        self.known_map[y][x] = " "
+
+        for (nx, ny), space in percept.items():
+            if space == " ":
+                self.known_map[ny][nx] = " "
+            elif space == "x":
+                self.known_map[ny][nx] = "x"
+            elif utils.is_flame(space):
+                self.known_map[ny][nx] = "*"
+            elif utils.is_water_station(space):
+                self.known_map[ny][nx] = "s"
+                self.water_station_location = (nx, ny)
+
 
     def decide(self, percept: dict[tuple[int, int], ...]):
         free_spaces = []
@@ -23,22 +51,30 @@ class Robot(Agent):
             elif utils.is_water_station(v):
                 self.water_station_location = k
 
-        if len(free_spaces) != 0 and len(fire_spaces) == 0:
-            return "move",random.choice(free_spaces),None
-        elif len(fire_spaces) != 0:
-            return "spray",random.choice(fire_spaces),None
-        return "stay",None,None
+        if fire_spaces and self.water_level >= 5:
+            return "spray", random.choice(fire_spaces), None
 
+        if self.water_level < 5 and self.water_station_location is not None:
+            return "refill", self.water_station_location, None
+
+        if free_spaces:
+            return "move", random.choice(free_spaces), None
+
+        return "stay", None, None
 
     def act(self, environment):
         cell = self.sense(environment)
+
         decision,target,x = self.decide(cell)
         if decision == "move":
             self.move(environment, target)
         elif decision == "spray":
-            self.spray(environment,target)
+            self.spray(environment, target)
+        elif decision == "refill":
+            self.move_to_station(environment, target)
 
-
+        self.initialise_map(environment)
+        self.update_map(cell, environment)
 
     def move(self, environment, to):
         if environment.move_to(self.position, to):
@@ -49,11 +85,39 @@ class Robot(Agent):
         fx, fy = target
         environment.world[fy][fx] = " "
 
+    def check_station(self):
+        if self.water_station_location is None:
+            return None
+        wx, wy = self.water_station_location
+        possible_spaces = [(wx, wy-1), (wx+1, wy), (wx, wy+1), (wx-1, wy)]
+        available_spaces = []
 
+        for x, y in possible_spaces:
+            if self.known_map[y][x] == " ":
+                available_spaces.append((x, y))
 
+        if len(available_spaces) == 0:
+            return None
+
+        available_spaces.sort(key=lambda p: self.calc_distance(self.position,p))
+
+        return available_spaces[0]
+
+    def move_to_station(self, environment, target):
+        target = self.check_station()
+        if target is None:
+            return
+
+        path = self.calc_path(self.position, target, None)
+        if path and len(path) >= 2:
+            self.move(environment, path[1])
+            sx, sy = self.position
+            self.known_map[sy][sx] = " "
+            print("moving using a*!")
 
     def refill(self):
         self.water_level = 100
+
 
     def __str__(self):
         return '🚒'
@@ -64,10 +128,10 @@ class Robot(Agent):
         heapq.heappush(p_queue, (0, start))
 
         directions = {
-            "right": (0, 1),
-            "left": (0, -1),
-            "up": (-1, 0),
-            "down": (1, 0)
+            "right": (-1, 0),
+            "left": (0, 1),
+            "up": (1, 0),
+            "down": (0, -1)
         }
         predecessors = {start: None}
         g_values = {start: 0}
@@ -87,6 +151,8 @@ class Robot(Agent):
                     heapq.heappush(p_queue, (f_value, neighbour))
                     predecessors[neighbour] = current_cell
 
+        return None
+
     def get_path(self, predecessors, start, goal):
         current = goal
         path = []
@@ -105,7 +171,10 @@ class Robot(Agent):
         # Do not move in to a cell containing a robot.
         # In fact, the only valid cells are blank ones
         # Also, do not go out of bounds.
-        pass
+        if self.known_map[y][x] == " ":
+            return True
+        else:
+            return False
 
     def calc_distance(self, point1: tuple[int, int], point2: tuple[int, int]):
         x1, y1 = point1

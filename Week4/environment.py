@@ -75,6 +75,9 @@ if __name__ == "__main__":
         print(e)
         water.act(e)
         robot1.act(e)
+
+        print(robot1.known_map)
         print(robot1.water_level)
+
 
 
